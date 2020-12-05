@@ -1,11 +1,19 @@
 package com.iiht.training.eloan.dto;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
+
 public class ProcessingDto {
+	@NotNull @Positive
 	private Double acresOfLand;
+	@NotNull @Positive
 	private Double landValue;
 	private String appraisedBy;
 	private String valuationDate;
+	@NotNull @Size(min=3,max=150)
 	private String addressOfProperty;
+	@NotNull @Positive
 	private Double suggestedAmountOfLoan;
 	public Double getAcresOfLand() {
 		return acresOfLand;

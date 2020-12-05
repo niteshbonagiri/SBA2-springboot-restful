@@ -2,9 +2,13 @@ package com.iiht.training.eloan.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +22,7 @@ import com.iiht.training.eloan.dto.LoanOutputDto;
 import com.iiht.training.eloan.dto.UserDto;
 import com.iiht.training.eloan.dto.exception.ExceptionResponse;
 import com.iiht.training.eloan.exception.CustomerNotFoundException;
+import com.iiht.training.eloan.exception.InvalidDataException;
 import com.iiht.training.eloan.service.CustomerService;
 
 @RestController
@@ -28,24 +33,48 @@ public class CustomerController {
 	private CustomerService customerService;
 	
 	@PostMapping("/register")
-	public ResponseEntity<UserDto> register(@RequestBody UserDto userDto){
-		return null;
+	public ResponseEntity<UserDto> register(@Valid @RequestBody UserDto userDto,BindingResult result){
+		
+		if(result.hasErrors()) {
+			throw new InvalidDataException("Invalid data format!");
+		}
+		UserDto user = this.customerService.register(userDto);
+		ResponseEntity<UserDto> response =
+				new ResponseEntity<UserDto>(user, HttpStatus.OK);
+		
+		return response;
 	}
 	
 	@PostMapping("/apply-loan/{customerId}")
 	public ResponseEntity<LoanOutputDto> applyLoan(@PathVariable Long customerId,
-												 @RequestBody LoanDto loanDto){
-		return null;
+												@Valid @RequestBody LoanDto loanDto,BindingResult result){
+		
+		if(result.hasErrors()) {
+			throw new InvalidDataException("Invalid data format!");
+		}
+		LoanOutputDto loan=this.customerService.applyLoan(customerId, loanDto);
+		ResponseEntity<LoanOutputDto> response =
+				new ResponseEntity<LoanOutputDto>(loan, HttpStatus.OK);
+		
+		return response;
 	}
 	
 	@GetMapping("/loan-status/{loanAppId}")
 	public ResponseEntity<LoanOutputDto> getStatus(@PathVariable Long loanAppId){
-		return null;
+		LoanOutputDto loan=this.customerService.getStatus(loanAppId);
+		ResponseEntity<LoanOutputDto> response =
+				new ResponseEntity<LoanOutputDto>(loan, HttpStatus.OK);
+		
+		return response;
 	}
 	
 	@GetMapping("/loan-status-all/{customerId}")
 	public ResponseEntity<List<LoanOutputDto>> getStatusAll(@PathVariable Long customerId){
-		return null;
+		List<LoanOutputDto> loan=this.customerService.getStatusAll(customerId);
+		ResponseEntity<List<LoanOutputDto>> response =
+				new ResponseEntity<List<LoanOutputDto>>(loan, HttpStatus.OK);
+		
+		return response;
 	}
 	
 	@ExceptionHandler(CustomerNotFoundException.class)
@@ -58,4 +87,5 @@ public class CustomerController {
 				new ResponseEntity<ExceptionResponse>(exception, HttpStatus.NOT_FOUND);
 		return response;
 	}
+	
 }

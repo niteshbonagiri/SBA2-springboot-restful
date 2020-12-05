@@ -8,4 +8,6 @@ import com.iiht.training.eloan.entity.SanctionInfo;
 @Repository
 public interface SanctionInfoRepository extends JpaRepository<SanctionInfo, Long>{
 
+	SanctionInfo findByLoanAppId(Long id);
+
 }

@@ -2,9 +2,12 @@ package com.iiht.training.eloan.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +22,7 @@ import com.iiht.training.eloan.dto.SanctionDto;
 import com.iiht.training.eloan.dto.SanctionOutputDto;
 import com.iiht.training.eloan.dto.exception.ExceptionResponse;
 import com.iiht.training.eloan.exception.AlreadyFinalizedException;
+import com.iiht.training.eloan.exception.InvalidDataException;
 import com.iiht.training.eloan.exception.ManagerNotFoundException;
 import com.iiht.training.eloan.service.ManagerService;
 
@@ -31,21 +35,41 @@ public class ManagerController {
 	
 	@GetMapping("/all-processed")
 	public ResponseEntity<List<LoanOutputDto>> allProcessedLoans() {
-		return null;
+		List<LoanOutputDto> list=this.managerService.allProcessedLoans();
+		ResponseEntity<List<LoanOutputDto>> response =
+				new ResponseEntity<List<LoanOutputDto>>(list, HttpStatus.OK);
+		return response;
 	}
 	
 	@PostMapping("/reject-loan/{managerId}/{loanAppId}")
 	public ResponseEntity<RejectDto> rejectLoan(@PathVariable Long managerId,
 												@PathVariable Long loanAppId,
-												@RequestBody RejectDto rejectDto){
-		return null;
+												@Valid @RequestBody RejectDto rejectDto,BindingResult result){
+		
+		if(result.hasErrors()) {
+			throw new InvalidDataException("Invalid data format!");
+		}
+		
+		RejectDto dto = this.managerService.rejectLoan(managerId, loanAppId, rejectDto);
+		
+		ResponseEntity<RejectDto> response = new ResponseEntity<RejectDto>(dto,HttpStatus.OK);
+		
+		return response;
 	}
 	
 	@PostMapping("/sanction-loan/{managerId}/{loanAppId}")
 	public ResponseEntity<SanctionOutputDto> sanctionLoan(@PathVariable Long managerId,
 												@PathVariable Long loanAppId,
-												@RequestBody SanctionDto sanctionDto){
-		return null;
+												@Valid @RequestBody SanctionDto sanctionDto,BindingResult result){
+		if(result.hasErrors()) {
+			throw new InvalidDataException("Invalid data format!");
+		}
+		
+		SanctionOutputDto dto = this.managerService.sanctionLoan(managerId, loanAppId, sanctionDto);
+		
+		ResponseEntity<SanctionOutputDto> response = new ResponseEntity<SanctionOutputDto>(dto,HttpStatus.OK);
+		
+		return response;
 	}
 	
 	@ExceptionHandler(ManagerNotFoundException.class)
